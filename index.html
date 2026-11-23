@@ -16,7 +16,7 @@
                 <span id="save-status" class="status-text">未保存(ブラウザ一時保存中)</span>
                 <button id="btn-connect-file" class="btn btn-primary" title="PC内のJSONファイルに直接自動保存します">ローカルJSONと連携(自動保存)</button>
                 <button id="btn-export-json" class="btn btn-secondary">JSONバックアップ保存</button>
-                <label class="btn btn-secondary file=label">
+                <label class="btn btn-secondary file-label">
                     JSON読込
                     <input type="file" id="input-import-json" accept=".json" hidden>
                 </label>
@@ -28,11 +28,11 @@
              <aside class="sidebar">
                 <div class="card">
                     <h2>1. 団体・配分予算の登録</h2>
-                    <from id="form-add-group" class="stack-form">
+                    <form id="form-add-group" class="stack-form">
                         <input type="text" id="input-group-name" placeholder="団体（例: 3年A組）" required>
-                        <input tyoe="number" id="input-group-budget" placeholder="配分予算（円）" min="0" required>
+                            <input type="number" id="input-group-budget" placeholder="配分予算（円）" min="0" required>
                         <button type="submit" class="btn btn-primary">団体を追加</button>
-                    </from>
+                        </form>
                 </div>
 
                 <div class="card">
@@ -82,10 +82,11 @@
                     <!-- レシート検算フォーム -->
                      <div class="card">
                         <h2>2. レシート検算入力</h2>
-                        <from id="from-add-receipt" class="receipt-form">
+                        <form id="form-add-receipt" class="receipt-form">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="input-payer">立替対応者識別名 <small>（空欄なら「立替者1, 2...」を自動採番）</small></label>
+                                    <input type="text" id="input-payer" placeholder="氏名や団体名は不要（空欄可）">
                                     <div id="payer-quick-buttons" class="quick-tags">
                                         <!-- すでにこの団体で登録された立替対応者がワンクリックボタンとして並ぶ -->
                                     </div>
@@ -99,7 +100,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="input-declared-amount">団体の申告額（円）<small>（実額と同額なら空欄でOK）</small></label>
-                                    <input type="number" id="inputdeclared-amount" placeholder="異なる場合のみ入力" min="0">
+                                    <input type="number" id="input-declared-amount" placeholder="異なる場合のみ入力" min="0">
                                 </div>
                                 <div class="form-group">
                                     <label for="input-receipt-date">購入日 <small>（任意・重複検知用）</small></label>
@@ -116,14 +117,14 @@
                                     <button type="submit" class="btn btn-primary full-width">チェック登録（Enter）</button>
                                 </div>
                             </div>
-                        </from>
+                        </form>
                     </div>
 
                     <!-- 検算済みレシート一覧 -->
                      <div class="card">
                         <div class="card-header-flex">
                             <h2>3. 検算済みレシート一覧（登録順）</h2>
-                            <span id="receipt-count" class="badge"0枚></span>
+                            <span id="receipt-count" class="badge">0枚</span>
                         </div>
                         <div class="table-responsive">
                             <table class="data-table">

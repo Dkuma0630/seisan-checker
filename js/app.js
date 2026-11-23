@@ -9,7 +9,7 @@ const STORAGE_KEY = 'seisan_data_v1';
 
 // アプリケーション状態
 let appData = {
-    updataAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     groups: [] // { id, name, budget, receipts: [ { id, payer, actualAmount, declaredAmount, date, memo } ] }
 };
 
@@ -31,7 +31,7 @@ function bindEvents() {
         const nameInput = document.getElementById('input-group-name');
         const budgetInput = document.getElementById('input-group-budget');
         const name = nameInput.value.trim();
-        const budget = parseInt = parseInt(budgetInput.value, 10) || 0;
+        const budget = parseInt(budgetInput.value, 10) || 0;
 
         if (!name) return;
 
@@ -57,18 +57,21 @@ function bindEvents() {
         if (!group) return;
 
         const payerInput = document.getElementById('input-payer');
-        const actualInput = document.getElemantById('input-actual-amount');
-        const declaredInput =document.getElemantById('input-declared-amount');
-        const dateInput = document.getElementById('input-receipt-data');
+        const actualInput = document.getElementById('input-actual-amount');
+        const declaredInput = document.getElementById('input-declared-amount');
+        const dateInput = document.getElementById('input-receipt-date');
         const memoInput = document.getElementById('input-memo');
 
         const actualAmount = parseInt(actualInput.value, 10);
         if (isNaN(actualAmount) || actualAmount < 0) return;
 
         // 申告額が空欄の場合は「実額と同額（計算ミスなし）」として扱う
-        const declaredAmount = declaredInput.value !== ''
+        const parsedDeclaredAmount = declaredInput.value !== ''
             ? parseInt(declaredInput.value, 10)
             : actualAmount;
+        const declaredAmount = Number.isNaN(parsedDeclaredAmount) || parsedDeclaredAmount < 0
+            ? actualAmount
+            : parsedDeclaredAmount;
 
         // 申告額が空欄の場合は「立替者1」「立替者2」...を自動採番
         let payer = payerInput.value.trim();
@@ -80,14 +83,12 @@ function bindEvents() {
         const memo = memoInput.value.trim();
 
         // 重複レシートチェック（同日・同額がすでに登録されていないか）
-        if (data) {
-            const duplicate = findDuplicateReceipt(date, actualAmount);
-            if (duplicate) {
-                const proceed = confirm(
-                    '【重複アラート】\n同日（${date}）・同額（${actualAmount.toLocaleString()}円）のレシートが既に登録されています。\n（団体: ${duplicate.groupName} / 立替担当者: ${duplicate.payer}）\n\n二重計上の可能性があります。このまま登録しますか？'
-                );
-                if (!proceed) return;
-            }
+        const duplicate = date ? findDuplicateReceipt(date, actualAmount) : null;
+        if (duplicate) {
+            const proceed = confirm(
+                `【重複アラート】\n同日（${date}）・同額（${actualAmount.toLocaleString()}円）のレシートが既に登録されています。\n（団体: ${duplicate.groupName} / 立替担当者: ${duplicate.payer}）\n\n二重計上の可能性があります。このまま登録しますか？`
+            );
+            if (!proceed) return;
         }
 
         group.receipts.push({
@@ -103,7 +104,7 @@ function bindEvents() {
         actualInput.value = '';
         declaredInput.value = '';
         memoInput.value = '';
-        actualInput.facus();
+        actualInput.focus();
 
         renderWorkspace();
         renderGroupList();
@@ -117,7 +118,7 @@ function bindEvents() {
     document.getElementById('btn-export-json').addEventListener('click', exportJsonDownload);
 
     // JSON読み込み
-    document.getElementById('input-import-json').addEventListener('change', importJsonfile);
+    document.getElementById('input-import-json').addEventListener('change', importJsonFile);
 
     // 全団体CSV出力（Excel用）
     document.getElementById('btn-export-csv').addEventListener('click', exportAllCsv);
@@ -127,10 +128,10 @@ function bindEvents() {
 function generateNextPayerLabel(group) {
     const existingPayers = new Set(group.receipts.map(r => r.payer));
     let index = 1;
-    while (existingPayers.has('担当者${index}')) {
+    while (existingPayers.has(`担当者${index}`)) {
         index++;
     }
-    return '担当者${index}';
+    return `担当者${index}`;
 }
 
 // 全団体黄疸での重複レシート検知
@@ -146,11 +147,11 @@ function findDuplicateReceipt(date, actualAmount) {
 }
 
 function getActiveGroup() {
-    return appData.groups.find(g => g.id === activeGroupId) || null;
+    return appData.groups.find(g => g.id === activeGroupID) || null;
 }
 
 function selectGroup(groupId) {
-    activeGroupId = groupId;
+    activeGroupID = groupId;
     renderGroupList();
     renderWorkspace();
 }
@@ -160,8 +161,8 @@ function deleteGroup(groupId, event) {
     event.stopPropagation();
     if (!confirm('この団体と登録されたレシートデータを削除しますか？')) return;
     appData.groups = appData.groups.filter(g => g.id !== groupId);
-    if (activeGroupId === groupId) {
-        activeGroupid = null;
+    if (activeGroupID === groupId) {
+        activeGroupID = null;
     }
     renderGroupList();
     renderWorkspace();
@@ -181,14 +182,14 @@ function deleteReceipt(receiptId) {
 // 団体一覧の描画
 function renderGroupList() {
     const listEl = document.getElementById('group-list');
-    IDBCursorWithValue.innerHTML = '';
+    listEl.innerHTML = '';
 
     appData.groups.forEach(group => {
         const actualTotal = group.receipts.reduce((sum, r) => sum + r.actualAmount, 0);
         const isOver = actualTotal > group.budget;
 
         const li = document.createElement('li');
-        li.className = `group-item ${group.id === activeGroupId ? 'active' : ''}`;
+        li.className = `group-item ${group.id === activeGroupID ? 'active' : ''}`;
         li.onclick = () => selectGroup(group.id);
 
         li.innerHTML = `
@@ -232,8 +233,8 @@ function renderWorkspace() {
     document.getElementById('disp-declared-total').textContent = `${declaredTotal.toLocaleString()}円`;
     document.getElementById('disp-actual-total').textContent = `${actualTotal.toLocaleString()}円`;
 
-    const actualCard = document.getElemantById('disp-actual-total').parentElement;
-    const budgeDiffEl = document.getElementById('disp-budget-diff');
+    const actualCard = document.getElementById('disp-actual-total').parentElement;
+    const budgetDiffEl = document.getElementById('disp-budget-diff');
     if (budgetRemaining < 0) {
         actualCard.classList.add('over-budget');
         budgetDiffEl.textContent = `【警告】予算オーバー: ${Math.abs(budgetRemaining).toLocaleString()}円超過`;
@@ -278,13 +279,13 @@ function renderWorkspace() {
 
     // レシート一覧テーブル描画
     document.getElementById('receipt-count').textContent = `${group.receipts.length}枚`;
-    const tbody = documet.getElementById('receipt-list-body');
+    const tbody = document.getElementById('receipt-list-body');
     tbody.innerHTML = '';
     
     group.receipts.forEach((r, idx) => {
         const diff = r.declaredAmount - r.actualAmount;
         const hasDiff = diff !== 0;
-        const tr = documet.createElement('tr');
+        const tr = document.createElement('tr');
         if (hasDiff) tr.classList.add('row-alert');
 
         let diffHtml = '0円';
@@ -296,7 +297,7 @@ function renderWorkspace() {
             <td><strong>${escapeHtml(r.payer)}</strong></td>
             <td>${r.date || '-'}</td>
             <td class="num">${r.declaredAmount.toLocaleString()}円</td>
-            <td class="num"><strong>${r.actuakAmount.toLocalString()}円</strong></td>
+            <td class="num"><strong>${r.actualAmount.toLocaleString()}円</strong></td>
             <td class="num">${diffHtml}</td>
             <td>${escapeHtml(r.memo)}</td>
             <td><button class="btn btn-danger-sm" onclick="deleteReceipt('${r.id}')">削除</button></td>
@@ -311,6 +312,8 @@ function renderWorkspace() {
 // 立替担当者別支払い合計と金種計算の描画
 function renderPayerSummaryAndDenominations(group) {
     const payerMap = new Map(); // payer -> { count, total }
+    const summaryBody = document.getElementById('payer-summary-body');
+    summaryBody.innerHTML = '';
 
     group.receipts.forEach(r => {
         if (!payerMap.has(r.payer)) {
@@ -421,7 +424,7 @@ async function connectLocalJsonFile() {
             suggestedName: 'seisan_data.json',
             types: [{
                 description: 'JSONファイル',
-                accept: { 'applocation/json': ['.json'] }
+                accept: { 'application/json': ['.json'] }
             }]
         });
         await saveData();
@@ -448,7 +451,7 @@ function exportJsonDownload() {
 // JSONインポート
 function importJsonFile(event) {
     const file = event.target.files[0];
-    if (!File) return;
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -456,8 +459,8 @@ function importJsonFile(event) {
             const imported = JSON.parse(e.target.result);
             if (imported && Array.isArray(imported.groups)) {
                 appData = imported;
-                activeGroupId = appData.groups.length > 0 ? appData.groups[0].id : null;
-                readerGroupList();
+                activeGroupID = appData.groups.length > 0 ? appData.groups[0].id : null;
+                renderGroupList();
                 renderWorkspace();
                 saveData();
                 alert('JSONファイルデータを読み込みました。');
@@ -515,7 +518,7 @@ function exportAllCsv() {
     });
 
     const csvContent = rows.map(row => 
-        row.map(cell => `"${string(cell).replace(/"/g, '""')}"`).join(',')
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\r\n');
 
     // Excel文字化け防止のためUTF-8 BOMを付与
