@@ -1,0 +1,382 @@
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic proN", "Hiragino Sans", Meiryo, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+/* ヘッダー */
+.app-header {
+    background: #0f172a;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.header-title h1 {
+    font-size: 1.2rem;
+}
+
+.badge {
+    background: #334155;
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+}
+
+.file-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.status-text {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-right: 0.5rem;
+}
+
+.status-text.saved {
+    color: #34d399;
+    font-weight: bold;
+}
+
+/* レイアウト */
+.container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.2rem;
+    padding: 1.2rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+}
+.card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0.1);
+    margin-bottom: 1.2rem;
+}
+
+.card h2 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--bg);
+}
+
+/* ボタン・フォーム */
+.btn {
+    display: inline-block;
+    padding: 0.5rem 0.9rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: #475569; color: #fff; }
+.btn-secondary:hover { background: #334155; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger-sm { background: #fee2e2; color: var(--danger); padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+.btn-danger-sm:hover { background: #fecaca; }
+.full-width { width: 100%; }
+
+.stack-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* 団体リスト */
+.group-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.group-item {
+    padding: 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s;
+}
+
+.group-item:hover {
+    background: #f8fafc;
+}
+
+.group-item.active {
+    border-color: var(--primary);
+    background: #eff6ff;
+    font-weight: bold;
+}
+
+.group-item .meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: block;
+    font-weight: normal;
+}
+
+/* サマリーカード */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+@media (max-width: 1100px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.summary-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #94a3b8;
+}
+
+.summary-card.highlight {
+    border-left-color: var(--primary);
+}
+
+.summary-card.over-budget {
+    border-left-color: var(--danger);
+    background: #fef2f2;
+}
+
+.summary-card .label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.summary-card .value {
+    display: block;
+    font-size: 1.4rem;
+    margin: 0.2rem 0;
+}
+
+.summary-card .sub-value {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* 検算フォーム */
+.form-row {
+    margin-bottom: 0.8rem;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.8rem;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.8rem;
+}
+
+.grid-2-equal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+}
+
+.form-group label small {
+    font-weight: normal;
+    color: var(--text-muted);
+}
+
+.req { color: var(--danger); }
+.align-end { display: flex; align-items: flex-end; }
+
+/* クイック選択タグ */
+.quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.tag-btn {
+    background: #e2e8f0;
+    border: none;
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.tag-btn:hover {
+    background: #cbd5e1;
+}
+
+/* テーブル */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+
+.data-table th {
+    background: #f8fafc;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.data-table th.num,
+.data-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.diff-plus { color: var(--danger); font-weight: bold; }
+.diff-miunus { color: var(--primary); font-weight: bold; }
+.row-alert { background-color: #fffbeb; }
+
+/* 金種グリッド */
+.denom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+}
+
+.denom-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: center;
+    background: #f8fafc;
+}
+
+.denom-item .coin-name {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.denom-item .coin-count {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+.help-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.card-header-flex h2 {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.empty-state {
+    background: var(--card-bg);
+    padding: 3rem;
+    border-radius: 8px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.hidden { display: none; }

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>精算チェックツール</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <header class="app-header">
+            <div class="header-title">
+                <h1>立替精算チェックツール</h1>
+                <span class="badge">ローカル完結・個人情報入力不要</span>
+            </div>
+            <div class="file-controls">
+                <span id="save-status" class="status-text">未保存(ブラウザ一時保存中)</span>
+                <button id="btn-connect-file" class="btn btn-primary" title="PC内のJSONファイルに直接自動保存します">ローカルJSONと連携(自動保存)</button>
+                <button id="btn-export-json" class="btn btn-secondary">JSONバックアップ保存</button>
+                <label class="btn btn-secondary file=label">
+                    JSON読込
+                    <input type="file" id="input-import-json" accept=".json" hidden>
+                </label>
+            </div>
+        </header>
+
+        <main class="container">
+            <!-- 左カラム：団体管理 -->
+             <aside class="sidebar">
+                <div class="card">
+                    <h2>1. 団体・配分予算の登録</h2>
+                    <from id="form-add-group" class="stack-form">
+                        <input type="text" id="input-group-name" placeholder="団体（例: 3年A組）" required>
+                        <input tyoe="number" id="input-group-budget" placeholder="配分予算（円）" min="0" required>
+                        <button type="submit" class="btn btn-primary">団体を追加</button>
+                    </from>
+                </div>
+
+                <div class="card">
+                    <h2>チェック対象団体一覧</h2>
+                    <ul id="group-list" class="group-list">
+                        <!-- JSで動的に団体リストを生成 -->
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>全体集計・帳票出力</h2>
+                    <button id="btn-export-csv" class="btn btn-success full-width">全団体の精算確定表をCSV出力（Excel用）</button>
+                </div>
+            </aside>
+
+            <!-- 右カラム：チェック作業エリア -->
+             <section class="workspace">
+                <div id="empty-state" class="empty-state">
+                    <p>左側のメニューから「団体・配分予算」を登録または選択して、レシートのチェックを開始してください。</p>
+                </div>
+
+                <div id="active-workspace" class="hidden">
+                    <!-- リアルタイム比較パネル -->
+                     <div class="summary-grid">
+                        <div class="summary-card">
+                            <span class="label">対象団体 / 配分予算</span>
+                            <strong id="disp-group-name" class="value">-</strong>
+                            <span id="disp-budget" class="sub-value">予算: 0円</span>
+                        </div>
+                        <div class="summary-card">
+                            <span class="label">団体の報告書 申告予算</span>
+                            <strong id="disp-declared-total" class="value">0円</strong>
+                            <span class="sub-value">団体側が計算した金額</span>
+                        </div>
+                        <div class="summary-card highlight">
+                            <span class="label">監査確定合計（正しい支払額）</span>
+                            <strong id="disp-actual-total" class="value">0円</strong>
+                            <span id="disp-budget-diff" class="sub-value">予算残高: 0円</span>
+                        </div>
+                        <div class="summary-card">
+                            <span class="label">申告との差額（過不足）</span>
+                            <strong id="disp-variance" class="value">0円</strong>
+                            <span id="disp-variance-note" class="sub-value">一致しています</span>
+                        </div>
+                    </div>
+
+                    <!-- レシート検算フォーム -->
+                     <div class="card">
+                        <h2>2. レシート検算入力</h2>
+                        <from id="from-add-receipt" class="receipt-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="input-payer">立替対応者識別名 <small>（空欄なら「立替者1, 2...」を自動採番）</small></label>
+                                    <div id="payer-quick-buttons" class="quick-tags">
+                                        <!-- すでにこの団体で登録された立替対応者がワンクリックボタンとして並ぶ -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row grid-3">
+                                <div class="form-group">
+                                    <label for="input-actual-amount">レシートの実額（レシート記載金額・円）<span class="req">*</span></label>
+                                    <input type="number" id="input-actual-amount" placeholder="例: 1280" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-declared-amount">団体の申告額（円）<small>（実額と同額なら空欄でOK）</small></label>
+                                    <input type="number" id="inputdeclared-amount" placeholder="異なる場合のみ入力" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-receipt-date">購入日 <small>（任意・重複検知用）</small></label>
+                                    <input type="date" id="input-receipt-date">
+                                </div>
+                            </div>
+
+                            <div class="form-row grid-2">
+                                <div class="form-group">
+                                    <label for="input-memo">監査メモ・備考欄 <small>（記載ミスの訂正など）</small></label>
+                                    <input type="text" id="input-memo" placeholder="例: 記載ミス修正 / 対象外商品を除外">
+                                </div>
+                                <div class="form-group align-end">
+                                    <button type="submit" class="btn btn-primary full-width">チェック登録（Enter）</button>
+                                </div>
+                            </div>
+                        </from>
+                    </div>
+
+                    <!-- 検算済みレシート一覧 -->
+                     <div class="card">
+                        <div class="card-header-flex">
+                            <h2>3. 検算済みレシート一覧（登録順）</h2>
+                            <span id="receipt-count" class="badge"0枚></span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>立替対応者（識別）</th>
+                                        <th>購入日</th>
+                                        <th class="num">団体申告額</th>
+                                        <th class="num">監査確定額</th>
+                                        <th class="num">差額</th>
+                                        <th>監査メモ</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receipt-list-body">
+                                    <!-- JSで動的に行を追加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 立替対応者別 支払い確定サマリー（概要）＆ 金種計算 -->
+                     <div class="grid-2-equal">
+                        <div class="card">
+                            <h2>4. 立替者対応者別の正しい支払額（合算結果）</h2>
+                            <p class="help-text">※団体申告額ではなく、「監査確定額」を合算した確定返金額です。</p>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>立替担当者（識別）</th>
+                                        <th class="num">枚数</th>
+                                        <th class="num">確定した支払合計</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payer-summary-body">
+                                    <!-- JSで動的に集計表示 -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card">
+                            <h2>5. 現金受け渡し用 金種計算</h2>
+                            <p class="help-text">※全員にぴったりの金額を渡すために必要な紙幣・硬貨の枚数です。</p>
+                            <div id="denomination-grid" class="denom-grid">
+                                <!-- JSで金種枚数を表示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <script src="js/app.js"></script>
+    </body>
+</html>
